@@ -68,7 +68,7 @@ Full usage instructions and help is provided on these pages:
 
 = Where is the documentation? =
 
-[Documentation](http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/")
+[Documentation](http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/)
 
 = I have a question, where do I ask? =
 
