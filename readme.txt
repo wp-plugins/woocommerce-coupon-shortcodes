@@ -55,7 +55,7 @@ If you purchase 5 Widgets, you can use the coupon [coupon_code] to get 25% off y
 
 Full usage instructions and help is provided on these pages:
 
-- [Documentation](http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/")
+- [Documentation](http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/)
 - [WooCommerce Coupon Shortcodes plugin page and Support](http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes/)
 
 
