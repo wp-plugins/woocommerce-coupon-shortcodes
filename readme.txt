@@ -77,7 +77,7 @@ You can leave a comment at the [WooCommerce Coupon Shortcodes plugin page](http:
 
 == Screenshots ==
 
-See the plugin page [Groups](http://www.itthinx.com/plugins/woocommerce-discount-coupons/)
+See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugins/woocommerce-discount-coupons/)
 
 
 == Changelog ==
