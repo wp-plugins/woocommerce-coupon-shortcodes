@@ -28,11 +28,86 @@ class WooCommerce_Coupon_Shortcodes_Views {
 	 * Adds shortcodes.
 	 */
 	public static function init() {
+		add_shortcode( 'coupon_is_applied', array( __CLASS__, 'coupon_is_applied' ) );
 		add_shortcode( 'coupon_is_valid', array( __CLASS__, 'coupon_is_valid' ) );
 		add_shortcode( 'coupon_is_not_valid', array( __CLASS__, 'coupon_is_not_valid' ) );
 		add_shortcode( 'coupon_code', array( __CLASS__, 'coupon_code' ) );
 		add_shortcode( 'coupon_description', array( __CLASS__, 'coupon_description' ) );
 		add_shortcode( 'coupon_discount', array( __CLASS__, 'coupon_discount' ) );
+	}
+
+	/**
+	 * Evaluate coupons applied based on op and coupon codes.
+	 *
+	 * @param array $atts
+	 * @return boolean
+	 */
+	private static function _is_applied( $atts ) {
+
+		global $woocommerce_coupon_shortcodes_codes;
+
+		$options = shortcode_atts(
+			array(
+				'coupon' => null,
+				'code'   => null,
+				'op'     => 'and'
+			),
+			$atts
+		);
+
+		$code = null;
+		if ( !empty( $options['code'] ) ) {
+			$code = $options['code'];
+		} else if ( !empty( $options['coupon'] ) ) {
+			$code = $options['coupon'];
+		}
+		if ( $code === null ) {
+			return '';
+		}
+
+		$applied_coupon_codes = self::_get_applied_codes();
+
+		$codes = array_map( 'trim', explode( ',', $code ) );
+		if ( !in_array( '*', $codes ) ) {
+			$woocommerce_coupon_shortcodes_codes = $codes;
+			$applied = array();
+			foreach ( $codes as $code ) {
+				$applied[] = in_array( $code, $applied_coupon_codes );
+			}
+			switch( strtolower( $options['op'] ) ) {
+				case 'and' :
+					$is_applied = self::conj( $applied );
+					break;
+				default :
+					$is_applied = self::disj( $applied );
+			}
+		} else {
+			$woocommerce_coupon_shortcodes_codes = $applied_coupon_codes;
+			$is_applied = !empty( $applied_coupon_codes );
+		}
+		return $is_applied;
+	}
+
+	/**
+	 * Returns the valid coupon codes currently applied to the cart.
+	 * 
+	 * @return array of string with coupon codes
+	 */
+	private static function _get_applied_codes() {
+		global $woocommerce;
+		$applied_coupon_codes = array();
+		if ( isset( $woocommerce ) && isset( $woocommerce->cart ) ) {
+			$cart = $woocommerce->cart;
+			if ( ! empty( $cart->applied_coupons ) ) {
+				foreach ( $cart->applied_coupons as $key => $code ) {
+					$coupon = new WC_Coupon( $code );
+					if ( ! is_wp_error( $coupon->is_valid() ) ) {
+						$applied_coupon_codes[] = $code;
+					}
+				}
+			}
+		}
+		return $applied_coupon_codes;
 	}
 
 	/**
@@ -128,6 +203,32 @@ class WooCommerce_Coupon_Shortcodes_Views {
 			}
 		}
 		return $r;
+	}
+
+	/**
+	 * Conditionally render content based on coupons which are applied.
+	 *
+	 * Takes a comma-separated list of coupon codes as coupon or code attribute.
+	 *
+	 * The op attribute determines whether all codes must be applied (and) or
+	 * any code can be applied (or) for the content to be rendered.
+	 *
+	 * @param array $atts attributes
+	 * @param string $content content to render
+	 * @return string
+	 */
+	public static function coupon_is_applied( $atts, $content = null ) {
+		$output = '';
+		if ( !empty( $content ) ) {
+			$applied = self::_is_applied( $atts );
+			if ( $applied ) {
+				remove_shortcode( 'coupon_is_applied' );
+				$content = do_shortcode( $content );
+				add_shortcode( 'coupon_is_applied', array( __CLASS__, 'coupon_is_applied' ) );
+				$output = $content;
+			}
+		}
+		return $output;
 	}
 
 	/**
@@ -255,27 +356,49 @@ class WooCommerce_Coupon_Shortcodes_Views {
 		$output = '';
 		$options = shortcode_atts(
 			array(
-				'coupon'    => null,
-				'code'      => null,
-				'separator' => ' '
+				'coupon'      => null,
+				'code'        => null,
+				'separator'   => ' ',
+				'element_tag' => 'span'
 			),
 			$atts
 		);
 
+		switch( $options['element_tag'] ) {
+			case 'li' :
+			case 'span' :
+			case 'div' :
+			case 'p' :
+				$element_tag = $options['element_tag'];
+				break;
+			default :
+				$element_tag = 'span';
+		}
+
+		$elements = array();
 		$codes = self::get_codes( $options );
 		foreach ( $codes as $code ) {
 			$coupon = new WC_Coupon( $code );
 			if ( $coupon->id ) {
 				if ( $post = get_post( $coupon->id ) ) {
 					if ( !empty( $post->post_excerpt ) ) {
-						$output .= sprintf( '<span class="coupon description %s">', stripslashes( wp_strip_all_tags( $coupon->code ) ) );
-						$output .= stripslashes( wp_filter_kses( $post->post_excerpt ) );
-						$output .= '</span>';
-						$output .= stripslashes( wp_filter_kses( $options['separator'] ) );
+						$elements[] =
+							sprintf( '<%s class="coupon description %s">', stripslashes( wp_strip_all_tags( $element_tag ) ), stripslashes( wp_strip_all_tags( $coupon->code ) ) ) .
+							stripslashes( wp_filter_kses( $post->post_excerpt ) ) .
+							sprintf( '</%s>', stripslashes( wp_strip_all_tags( $element_tag ) ) );
 					}
 				}
 			}
 		}
+
+		if ( $element_tag == 'li' ) {
+			$output .= '<ul>';
+		}
+		$output .= implode( stripslashes( wp_filter_kses( $options['separator'] ) ), $elements );
+		if ( $element_tag == 'li' ) {
+			$output .= '</ul>';
+		}
+
 		return $output;
 	}
 
@@ -290,20 +413,34 @@ class WooCommerce_Coupon_Shortcodes_Views {
 		$output = '';
 		$options = shortcode_atts(
 			array(
-				'coupon'    => null,
-				'code'      => null,
-				'separator' => ' ',
-				'renderer'  => 'auto'
+				'coupon'      => null,
+				'code'        => null,
+				'separator'   => ' ',
+				'element_tag' => 'span',
+				'renderer'    => 'auto'
 			),
 			$atts
 		);
 
+		switch( $options['element_tag'] ) {
+			case 'li' :
+			case 'span' :
+			case 'div' :
+			case 'p' :
+				$element_tag = $options['element_tag'];
+				break;
+			default :
+				$element_tag = 'span';
+		}
+
+		$elements = array();
 		$codes = self::get_codes( $options );
 		foreach ( $codes as $code ) {
+			$element_output = '';
 			$coupon = new WC_Coupon( $code );
 			if ( $coupon->id ) {
-				$output .= sprintf( '<span class="coupon discount %s">', stripslashes( wp_strip_all_tags( $coupon->code ) ) );
-				
+				$element_output .= sprintf( '<%s class="coupon discount %s">', stripslashes( wp_strip_all_tags( $element_tag ) ), stripslashes( wp_strip_all_tags( $coupon->code ) ) );
+
 				$renderer = null;
 				if ( $options['renderer'] == 'auto' ) {
 
@@ -325,17 +462,26 @@ class WooCommerce_Coupon_Shortcodes_Views {
 				}
 
 				if ( $renderer === null ) {
-					$output .= self::get_discount_info( $coupon, $atts );
+					$element_output .= self::get_discount_info( $coupon, $atts );
 				} else {
 					switch( $renderer ) {
 						case 'WooCommerce_Volume_Discount_Coupons_Shortcodes' :
-							$output .= WooCommerce_Volume_Discount_Coupons_Shortcodes::get_volume_discount_info( $coupon );
+							$element_output .= WooCommerce_Volume_Discount_Coupons_Shortcodes::get_volume_discount_info( $coupon );
 							break;
 					}
 				}
-				$output .= '</span>';
-				$output .= stripslashes( wp_filter_kses( $options['separator'] ) );
+				$element_output .= sprintf( '</%s>', stripslashes( wp_strip_all_tags( $element_tag ) ) );
 			}
+			if ( !empty( $element_output ) ) {
+				$elements[] = $element_output;
+			}
+		}
+		if ( $element_tag == 'li' ) {
+			$output .= '<ul>';
+		}
+		$output .= implode( stripslashes( wp_filter_kses( $options['separator'] ) ), $elements );
+		if ( $element_tag == 'li' ) {
+			$output .= '</ul>';
 		}
 		return $output;
 	}

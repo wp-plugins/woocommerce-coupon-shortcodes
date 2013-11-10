@@ -3,7 +3,7 @@ Contributors: itthinx
 Donate link: http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes
 Tags: conditional, coupon, coupons, discount, discounts, display, info, information, marketing, promotion, shortcode, shortcodes, woocommerce
 Requires at least: 3.3
-Tested up to: 3.6.1
+Tested up to: 3.7.1
 Stable tag: 1.0.0
 License: GPLv3
 
@@ -23,6 +23,7 @@ Extended coupon discount info for volume discounts is shown automatically, if th
 
 It provides the conditional shortcodes
 
+`[coupon_is_applied]`,
 `[coupon_is_valid]` and
 `[coupon_is_not_valid]`
 
@@ -82,10 +83,17 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 == Changelog ==
 
+= 1.1.0 =
+* Added: [coupon_is_applied] shortcode
+* Improved: allow more flexible description and discount listings, the `element_tag` attribute can be used to specify enclosing tags other than the default `span`
+
 = 1.0.0 =
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+* New shortcode allowing to show content based on coupons applied. Added new description and discount info rendering options.
 
 = 1.0.0 =
 * Initial release.
