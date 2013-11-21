@@ -113,3 +113,7 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 = 1.0.0 =
 * Initial release.
+
+
+
+
