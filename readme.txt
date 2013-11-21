@@ -1,7 +1,7 @@
 === WooCommerce Coupon Shortcodes ===
 Contributors: itthinx
 Donate link: http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes
-Tags: conditional, coupon, coupons, discount, discounts, display, info, information, marketing, promotion, shortcode, shortcodes, woocommerce
+Tags: conditional, coupon, coupons, discount, discounts, display, info, information, marketing, promotion, shortcode, shortcodes, subscription, subscriptions, woocommerce
 Requires at least: 3.3
 Tested up to: 3.7.1
 Stable tag: 1.1.0
@@ -21,13 +21,11 @@ Extended coupon discount info for volume discounts is shown automatically, if th
 
 = Conditional Shortcodes =
 
-It provides the conditional shortcodes
+It provides the following conditional shortcodes that allow to enclose content which is shown if coupons are applied, valid or not valid.
 
-`[coupon_is_applied]`,
-`[coupon_is_valid]` and
+`[coupon_is_applied]`
+`[coupon_is_valid]`
 `[coupon_is_not_valid]`
-
-that allow to enclose content which is shown if the coupon is (or is not) valid.
 
 = Coupon Info Shortcodes =
 
@@ -36,6 +34,15 @@ It also provides shortcodes that allow to render the coupon code, its descriptio
 `[coupon_code]` (this one makes sense mostly when used inside one of the conditional shortcodes).
 `[coupon_description]`
 `[coupon_discount]`
+
+A coupon enumerator shortcode allows to list all or a set of coupons, to show their code, description or discount information:
+
+`[coupon_enumerate]`
+
+= Documentation =
+
+Please refer to the plugin's [documentation pages](http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/) for detailed descriptions.
+
 
 = Examples =
 
@@ -56,8 +63,8 @@ If you purchase 5 Widgets, you can use the coupon [coupon_code] to get 25% off y
 
 Full usage instructions and help is provided on these pages:
 
-- [Documentation](http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/)
-- [WooCommerce Coupon Shortcodes plugin page and Support](http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes/)
+- Please refer to the plugin's documentation pages for detailed information [Documentation](http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/)
+- Questions, feedback and suggestions can be posted on the plugin page [WooCommerce Coupon Shortcodes plugin page and Support](http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes/)
 
 
 == Installation ==
@@ -83,6 +90,12 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 == Changelog ==
 
+= 1.2.0 =
+* Added [coupon_enumerate] shortcode
+* Added support for subscription coupons
+* Added the option to display the coupon code as prefix with the [coupon_description] and [coupon_discount] shortcodes.
+* Fixed bug caused by undeclared variable used to check excluded product IDs
+
 = 1.1.0 =
 * Added: [coupon_is_applied] shortcode
 * Improved: allow more flexible description and discount listings, the `element_tag` attribute can be used to specify enclosing tags other than the default `span`
@@ -91,6 +104,9 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+* New shortcodes, added support for subscription coupons and bug fixes.
 
 = 1.1.0 =
 * New shortcode allowing to show content based on coupons applied. Added new description and discount info rendering options.

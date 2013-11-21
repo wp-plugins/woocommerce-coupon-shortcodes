@@ -28,6 +28,7 @@ class WooCommerce_Coupon_Shortcodes_Views {
 	 * Adds shortcodes.
 	 */
 	public static function init() {
+		add_shortcode( 'coupon_enumerate', array( __CLASS__, 'coupon_enumerate' ) );
 		add_shortcode( 'coupon_is_applied', array( __CLASS__, 'coupon_is_applied' ) );
 		add_shortcode( 'coupon_is_valid', array( __CLASS__, 'coupon_is_valid' ) );
 		add_shortcode( 'coupon_is_not_valid', array( __CLASS__, 'coupon_is_not_valid' ) );
@@ -108,6 +109,146 @@ class WooCommerce_Coupon_Shortcodes_Views {
 			}
 		}
 		return $applied_coupon_codes;
+	}
+
+	/**
+	 * Returns all published coupons' codes.
+	 * 
+	 * Options:
+	 * 
+	 * - type (coupon type) : fixed_cart, percent, fixed_product, percent_product, sign_up_fee, sign_up_fee_percent, recurring_fee, recurring_percent
+	 * - type (sets) : cart, fixed, percent, product, recurring, sign_up, subscription
+	 * - order : ID, code
+	 * - orderby : ASC, DESC
+	 * 
+	 * @return array of string with coupon codes
+	 */
+	private static function _get_coupon_codes( $options = array() ) {
+		global $wpdb;
+
+		$types = array();
+		if ( isset( $options['type'] ) ) {
+			$indicated_types = explode( ',', $options['type'] );
+			foreach( $indicated_types as $indicated_type ) {
+				$indicated_type = trim( $indicated_type );
+				$selected_types = array();
+				switch ( $indicated_type ) {
+					case 'fixed_cart' :
+					case 'percent' :
+					case 'fixed_product' :
+					case 'percent_product' :
+					case 'sign_up_fee' :
+					case 'sign_up_fee_percent' :
+					case 'recurring_fee' :
+					case 'recurring_percent' :
+						$selected_types[] = $indicated_type;
+						break;
+					case 'cart' :
+						$selected_types = array(
+							'fixed_cart',
+							'percent'
+						);
+						break;
+					case 'fixed' :
+						$selected_types = array(
+							'fixed_cart',
+							'fixed_product',
+							'sign_up_fee',
+							'recurring_fee'
+						);
+						break;
+					case 'percent' :
+						$selected_types = array(
+							'percent',
+							'percent_product',
+							'sign_up_fee_percent',
+							'recurring_percent'
+						);
+						break;
+					case 'product' :
+						$selected_types = array(
+							'fixed_product',
+							'pecent_product'
+						);
+						break;
+					case 'recurring' :
+						$selected_types = array(
+							'recurring_fee',
+							'recurring_percent'
+						);
+						break;
+					case 'sign_up' :
+						$selected_types = array(
+							'sign_up_fee',
+							'sign_up_fee_percent',
+						);
+						break;
+					case 'subscription' :
+						$selected_types = array(
+							'sign_up_fee',
+							'sign_up_fee_percent',
+							'recurring_fee',
+							'recurring_percent'
+						);
+						break;
+				}
+				if ( count( $selected_types ) > 0 ) {
+					foreach( $selected_types as $selected_type ) {
+						if ( !in_array( $selected_type, $types ) ) {
+							$types[] = $selected_type;
+						}
+					}
+				}
+			}
+		}
+
+		$order = 'post_title';
+		if ( isset( $options['order'] ) ) {
+			switch( $options['order'] ) {
+				case 'ID' :
+					$order = 'ID';
+					break;
+			}
+		}
+
+		$orderby = 'ASC';
+		if ( isset( $options['orderby'] ) ) {
+			switch( $options['orderby'] ) {
+				case 'asc' :
+				case 'ASC' :
+				case 'desc' :
+				case 'DESC' :
+					$orderby = $options['orderby'];
+					break;
+			}
+		}
+
+		$coupon_codes = array();
+		if ( count( $types ) == 0 ) {
+			$_coupons = $wpdb->get_results(
+				"SELECT DISTINCT ID, post_title FROM $wpdb->posts WHERE post_type = 'shop_coupon' AND post_status = 'publish' ORDER BY $order $orderby"
+			);
+		} else {
+			$types = esc_sql( $types );
+			$ts = array();
+			foreach( $types as $type ) {
+				$ts[] = "'" . $type . "'";
+			}
+			$_types = ' (' . implode(',', $ts ) . ') ';
+			$_coupons = $wpdb->get_results(
+				"SELECT DISTINCT ID, post_title FROM $wpdb->posts p LEFT JOIN $wpdb->postmeta pm ON p.ID = pm.post_id WHERE p.post_type = 'shop_coupon' AND p.post_status = 'publish' AND pm.meta_key = 'discount_type' AND pm.meta_value IN $_types ORDER BY $order $orderby"
+			);
+		}
+		if ( $_coupons && ( count( $_coupons ) > 0 ) ) {
+			foreach ( $_coupons as $coupon ) {
+				$coupon_code = $coupon->post_title;
+				$coupon = new WC_Coupon( $coupon_code );
+				if ( $coupon->id ) {
+					$coupon_codes[] = $coupon->code;
+				}
+			}
+		}
+		return $coupon_codes;
 	}
 
 	/**
@@ -203,6 +344,58 @@ class WooCommerce_Coupon_Shortcodes_Views {
 			}
 		}
 		return $r;
+	}
+
+	/**
+	 * Enumerate the coupons.
+	 * 
+	 * @param array $atts
+	 * @param string $content
+	 * @return string
+	 */
+	public static function coupon_enumerate( $atts, $content = null ) {
+
+		global $woocommerce_coupon_shortcodes_codes;
+
+		$options = shortcode_atts(
+			array(
+				'coupon'  => null,
+				'code'    => null,
+				'type'    => null,
+				'order'   => null,
+				'orderby' => null
+			),
+			$atts
+		);
+
+		$code = null;
+		if ( !empty( $options['code'] ) ) {
+			$code = $options['code'];
+		} else if ( !empty( $options['coupon'] ) ) {
+			$code = $options['coupon'];
+		}
+		if ( $code === null ) {
+			return '';
+		}
+
+		$coupon_codes = self::_get_coupon_codes( $options );
+
+		$codes = array_map( 'trim', explode( ',', $code ) );
+		if ( !in_array( '*', $codes ) ) {
+			$woocommerce_coupon_shortcodes_codes = $codes;
+			$existing = array();
+			foreach ( $codes as $code ) {
+				$existing[] = in_array( $code, $coupon_codes );
+			}
+			$woocommerce_coupon_shortcodes_codes = $existing;
+		} else {
+			$woocommerce_coupon_shortcodes_codes = $coupon_codes;
+		}
+
+		remove_shortcode( 'coupon_enumerate' );
+		$content = do_shortcode( $content );
+		add_shortcode( 'coupon_enumerate', array( __CLASS__, 'coupon_enumerate' ) );
+		return $content;
 	}
 
 	/**
@@ -359,7 +552,9 @@ class WooCommerce_Coupon_Shortcodes_Views {
 				'coupon'      => null,
 				'code'        => null,
 				'separator'   => ' ',
-				'element_tag' => 'span'
+				'element_tag' => 'span',
+				'prefix'      => null,
+				'prefix_separator' => ' '
 			),
 			$atts
 		);
@@ -375,6 +570,11 @@ class WooCommerce_Coupon_Shortcodes_Views {
 				$element_tag = 'span';
 		}
 
+		$prefix_code = false;
+		if ( $options['prefix'] == 'code' ) {
+			$prefix_code = true;
+		}
+
 		$elements = array();
 		$codes = self::get_codes( $options );
 		foreach ( $codes as $code ) {
@@ -382,7 +582,17 @@ class WooCommerce_Coupon_Shortcodes_Views {
 			if ( $coupon->id ) {
 				if ( $post = get_post( $coupon->id ) ) {
 					if ( !empty( $post->post_excerpt ) ) {
+
+						$element_prefix = '';
+						if ( $prefix_code ) {
+							$element_prefix .= sprintf( '<span class="coupon code %s">', stripslashes( wp_strip_all_tags( $coupon->code ) ) );
+							$element_prefix .= stripslashes( wp_strip_all_tags( $coupon->code ) );
+							$element_prefix .= '</span>';
+							$element_prefix .= stripslashes( wp_filter_kses( $options['prefix_separator'] ) );
+						}
+
 						$elements[] =
+							$element_prefix .
 							sprintf( '<%s class="coupon description %s">', stripslashes( wp_strip_all_tags( $element_tag ) ), stripslashes( wp_strip_all_tags( $coupon->code ) ) ) .
 							stripslashes( wp_filter_kses( $post->post_excerpt ) ) .
 							sprintf( '</%s>', stripslashes( wp_strip_all_tags( $element_tag ) ) );
@@ -417,7 +627,9 @@ class WooCommerce_Coupon_Shortcodes_Views {
 				'code'        => null,
 				'separator'   => ' ',
 				'element_tag' => 'span',
-				'renderer'    => 'auto'
+				'renderer'    => 'auto',
+				'prefix'      => null,
+				'prefix_separator' => ' '
 			),
 			$atts
 		);
@@ -431,6 +643,11 @@ class WooCommerce_Coupon_Shortcodes_Views {
 				break;
 			default :
 				$element_tag = 'span';
+		}
+
+		$prefix_code = false;
+		if ( $options['prefix'] == 'code' ) {
+			$prefix_code = true;
 		}
 
 		$elements = array();
@@ -459,6 +676,13 @@ class WooCommerce_Coupon_Shortcodes_Views {
 						}
 					}
 
+				}
+
+				if ( $prefix_code ) {
+					$element_output .= sprintf( '<span class="coupon code %s">', stripslashes( wp_strip_all_tags( $coupon->code ) ) );
+					$element_output .= stripslashes( wp_strip_all_tags( $coupon->code ) );
+					$element_output .= '</span>';
+					$element_output .= stripslashes( wp_filter_kses( $options['prefix_separator'] ) );
 				}
 
 				if ( $renderer === null ) {
@@ -501,6 +725,8 @@ class WooCommerce_Coupon_Shortcodes_Views {
 		switch( $coupon->type ) {
 			case 'percent' :
 			case 'percent_product' :
+			case 'sign_up_fee_percent' :
+			case 'recurring_percent' :
 				$amount_suffix = '%';
 				break;
 		}
@@ -510,6 +736,10 @@ class WooCommerce_Coupon_Shortcodes_Views {
 		switch ( $coupon->type ) {
 			case 'fixed_product' :
 			case 'percent_product' :
+			case 'sign_up_fee' :
+			case 'sign_up_fee_percent' :
+			case 'recurring_fee' :
+			case 'recurring_percent' :
 				if ( sizeof( $coupon->product_ids ) > 0 ) {
 					foreach( $coupon->product_ids as $product_id ) {
 						$product = get_product( $product_id );
@@ -537,6 +767,7 @@ class WooCommerce_Coupon_Shortcodes_Views {
 		}
 
 		switch ( $coupon->type ) {
+
 			case 'fixed_product' :
 			case 'percent_product' :
 				if ( sizeof( $coupon->product_ids ) > 0 ) {
@@ -547,16 +778,40 @@ class WooCommerce_Coupon_Shortcodes_Views {
 					}
 				} else if ( sizeof( $coupon->product_categories ) > 0 ) {
 					$result = sprintf( __( '%s%s Discount in %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, implode( $category_delimiter, $categories ) );
-				} else if ( sizeof( $coupons->exclude_product_ids ) > 0 || sizeof( $coupon->exclude_product_categories ) > 0 ) {
+				} else if ( sizeof( $coupon->exclude_product_ids ) > 0 || sizeof( $coupon->exclude_product_categories ) > 0 ) {
 					$result = sprintf( __( '%s%s Discount on selected products', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix );
 				} else {
 					$result = sprintf( __( '%s%s Discount', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix );
 				}
 
 				break;
+
 			case 'fixed_cart' :
 			case 'percent' :
 				$result = sprintf( __( '%s%s Discount', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix );
+				break;
+
+			case 'sign_up_fee' :
+			case 'sign_up_fee_percent' :
+			case 'recurring_fee' :
+			case 'recurring_percent' :
+				$discount_name = __( 'Subscription Discount', WOO_CODES_PLUGIN_DOMAIN );
+				if ( $coupon->type == 'sign_up_fee' || $coupon->type == 'sign_up_fee_percent' ) {
+					$discount_name = __( 'Sign Up Discount', WOO_CODES_PLUGIN_DOMAIN );
+				}
+				if ( sizeof( $coupon->product_ids ) > 0 ) {
+					if ( count( $products ) > 0 ) {
+						$result = sprintf( __( '%s%s %s on %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name, implode( $product_delimiter, $products ) );
+					} else {
+						$result = sprintf( __( '%s%s %s on selected products', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name );
+					}
+				} else if ( sizeof( $coupon->product_categories ) > 0 ) {
+					$result = sprintf( __( '%s%s %s in %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name, implode( $category_delimiter, $categories ) );
+				} else if ( sizeof( $coupon->exclude_product_ids ) > 0 || sizeof( $coupon->exclude_product_categories ) > 0 ) {
+					$result = sprintf( __( '%s%s %s on selected products', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name );
+				} else {
+					$result = sprintf( __( '%s%s %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name );
+				}
 				break;
 		}
 
