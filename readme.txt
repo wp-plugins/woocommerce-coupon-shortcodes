@@ -90,6 +90,9 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 == Changelog ==
 
+= 1.2.1 =
+* Fixed a PHP Warning when no codes are supplied to a shortcode.
+
 = 1.2.0 =
 * Added [coupon_enumerate] shortcode
 * Added support for subscription coupons
@@ -105,6 +108,9 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 == Upgrade Notice ==
 
+= 1.2.1 =
+* Fixes a PHP Warning when no codes are supplied to a shortcode.
+
 = 1.2.0 =
 * New shortcodes, added support for subscription coupons and bug fixes.
 
@@ -113,7 +119,3 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 = 1.0.0 =
 * Initial release.
-
-
-
-

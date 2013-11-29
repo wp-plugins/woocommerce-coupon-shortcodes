@@ -496,8 +496,6 @@ class WooCommerce_Coupon_Shortcodes_Views {
 		if ( $code === null ) {
 			if ( !empty( $woocommerce_coupon_shortcodes_codes ) ) {
 				$codes = $woocommerce_coupon_shortcodes_codes;
-			} else {
-				return '';
 			}
 		}
 		if ( empty( $codes ) ) {
