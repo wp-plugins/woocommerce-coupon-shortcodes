@@ -720,6 +720,9 @@ class WooCommerce_Coupon_Shortcodes_Views {
 		$result = '';
 
 		$amount_suffix = get_woocommerce_currency_symbol();
+		if ( function_exists( 'wc_price' ) ) {
+			$amount_suffix = null;
+		}
 		switch( $coupon->type ) {
 			case 'percent' :
 			case 'percent_product' :
@@ -764,29 +767,34 @@ class WooCommerce_Coupon_Shortcodes_Views {
 				break;
 		}
 
+		$amount = $coupon->amount;
+		if ( $amount_suffix === null ) {
+			$amount = wc_price( $amount );
+			$amount_suffix = '';
+		}
 		switch ( $coupon->type ) {
 
 			case 'fixed_product' :
 			case 'percent_product' :
 				if ( sizeof( $coupon->product_ids ) > 0 ) {
 					if ( count( $products ) > 0 ) {
-						$result = sprintf( __( '%s%s Discount on %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, implode( $product_delimiter, $products ) );
+						$result = sprintf( __( '%s%s Discount on %s', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix, implode( $product_delimiter, $products ) );
 					} else {
-						$result = sprintf( __( '%s%s Discount on selected products', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix );
+						$result = sprintf( __( '%s%s Discount on selected products', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix );
 					}
 				} else if ( sizeof( $coupon->product_categories ) > 0 ) {
-					$result = sprintf( __( '%s%s Discount in %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, implode( $category_delimiter, $categories ) );
+					$result = sprintf( __( '%s%s Discount in %s', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix, implode( $category_delimiter, $categories ) );
 				} else if ( sizeof( $coupon->exclude_product_ids ) > 0 || sizeof( $coupon->exclude_product_categories ) > 0 ) {
-					$result = sprintf( __( '%s%s Discount on selected products', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix );
+					$result = sprintf( __( '%s%s Discount on selected products', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix );
 				} else {
-					$result = sprintf( __( '%s%s Discount', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix );
+					$result = sprintf( __( '%s%s Discount', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix );
 				}
 
 				break;
 
 			case 'fixed_cart' :
 			case 'percent' :
-				$result = sprintf( __( '%s%s Discount', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix );
+				$result = sprintf( __( '%s%s Discount', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix );
 				break;
 
 			case 'sign_up_fee' :
@@ -799,16 +807,16 @@ class WooCommerce_Coupon_Shortcodes_Views {
 				}
 				if ( sizeof( $coupon->product_ids ) > 0 ) {
 					if ( count( $products ) > 0 ) {
-						$result = sprintf( __( '%s%s %s on %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name, implode( $product_delimiter, $products ) );
+						$result = sprintf( __( '%s%s %s on %s', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix, $discount_name, implode( $product_delimiter, $products ) );
 					} else {
-						$result = sprintf( __( '%s%s %s on selected products', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name );
+						$result = sprintf( __( '%s%s %s on selected products', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix, $discount_name );
 					}
 				} else if ( sizeof( $coupon->product_categories ) > 0 ) {
-					$result = sprintf( __( '%s%s %s in %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name, implode( $category_delimiter, $categories ) );
+					$result = sprintf( __( '%s%s %s in %s', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix, $discount_name, implode( $category_delimiter, $categories ) );
 				} else if ( sizeof( $coupon->exclude_product_ids ) > 0 || sizeof( $coupon->exclude_product_categories ) > 0 ) {
-					$result = sprintf( __( '%s%s %s on selected products', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name );
+					$result = sprintf( __( '%s%s %s on selected products', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix, $discount_name );
 				} else {
-					$result = sprintf( __( '%s%s %s', WOO_CODES_PLUGIN_DOMAIN ), $coupon->amount, $amount_suffix, $discount_name );
+					$result = sprintf( __( '%s%s %s', WOO_CODES_PLUGIN_DOMAIN ), $amount, $amount_suffix, $discount_name );
 				}
 				break;
 		}

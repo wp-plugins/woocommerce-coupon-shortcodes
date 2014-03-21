@@ -3,7 +3,7 @@ Contributors: itthinx
 Donate link: http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes
 Tags: conditional, coupon, coupons, discount, discounts, display, info, information, marketing, promotion, shortcode, shortcodes, subscription, subscriptions, woocommerce
 Requires at least: 3.3
-Tested up to: 3.8
+Tested up to: 3.8.1
 Stable tag: 1.2.2
 License: GPLv3
 
@@ -90,6 +90,9 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 == Changelog ==
 
+= 1.2.3 =
+* Improved coupon currency symbol rendering, now using wp_price() to render amount and currency when available.
+
 = 1.2.2 =
 * WordPress 3.8 compatibility checked
 
@@ -110,6 +113,9 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+* Improved coupon currency symbol rendering, this is now consistent with WooCommerce settings.
 
 = 1.2.2 =
 * WordPress 3.8 compatibility checked
