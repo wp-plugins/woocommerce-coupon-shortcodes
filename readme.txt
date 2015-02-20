@@ -2,8 +2,8 @@
 Contributors: itthinx
 Donate link: http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes
 Tags: conditional, coupon, coupons, discount, discounts, display, info, information, marketing, promotion, shortcode, shortcodes, subscription, subscriptions, woocommerce
-Requires at least: 3.3
-Tested up to: 3.9
+Requires at least: 4.0
+Tested up to: 4.1.1
 Stable tag: 1.2.4
 License: GPLv3
 
@@ -18,6 +18,8 @@ when the contents in the cart qualify for it, or by offering them to purchase ad
 so they can use a coupon.
 
 Extended coupon discount info for volume discounts is shown automatically, if the [WooCommerce Volume Discount Coupons](http://www.itthinx.com/plugins/woocommerce-volume-discount-coupons) is installed.
+
+It also works with [WooCommerce Coupons Countdown](http://www.itthinx.com/plugins/woocommerce-coupons-countdown).
 
 = Conditional Shortcodes =
 
@@ -90,6 +92,10 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 
 == Changelog ==
 
+= 1.2.5 =
+* WordPress 4.1 and WooCommerce 2.3.x compatibility checked
+* Updated the version required
+
 = 1.2.4 =
 * WordPress 3.9 compatibility checked
 
@@ -116,6 +122,9 @@ See the plugin page [WooCommerce Coupon Shortcodes](http://www.itthinx.com/plugi
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.2.5 =
+* WordPress 4.1 and WooCommerce 2.3.x compatibility checked
 
 = 1.2.4 =
 * WordPress 3.9 compatibility checked

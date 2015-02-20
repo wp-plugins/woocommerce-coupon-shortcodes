@@ -2,7 +2,7 @@
 /**
  * woocommerce-coupon-shortcodes.php
  *
- * Copyright (c) 2013 "kento" Karim Rahimpur www.itthinx.com
+ * Copyright (c) 2013-2015 "kento" Karim Rahimpur www.itthinx.com
  *
  * This code is released under the GNU General Public License.
  * See COPYRIGHT.txt and LICENSE.txt.
@@ -21,12 +21,12 @@
  * Plugin Name: WooCommerce Coupon Shortcodes
  * Plugin URI: http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes
  * Description: Provides conditional shortcodes [coupon_is_valid], [coupon_is_not_valid] to enclose content and [coupon_code], [coupon_description], [coupon_discount] to render coupon information. <a href="http://www.itthinx.com/documentation/woocommerce-coupon-shortcodes/">Documentation</a> | <a href="http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes/">Plugin page</a>
- * Version: 1.2.4 
+ * Version: 1.2.5 
  * Author: itthinx
  * Author URI: http://www.itthinx.com
  */
 
-define( 'WOO_CODES_PLUGIN_VERSION', '1.2.4' );
+define( 'WOO_CODES_PLUGIN_VERSION', '1.2.5' );
 define( 'WOO_CODES_PLUGIN_DOMAIN', 'woocommerce-coupon-shortcodes' );
 define( 'WOO_CODES_FILE', __FILE__ );
 define( 'WOO_CODES_LOG', false );
