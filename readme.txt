@@ -3,7 +3,7 @@ Contributors: itthinx
 Donate link: http://www.itthinx.com/plugins/woocommerce-coupon-shortcodes
 Tags: conditional, coupon, coupons, discount, discounts, display, info, information, marketing, promotion, shortcode, shortcodes, subscription, subscriptions, woocommerce
 Requires at least: 4.0
-Tested up to: 4.1.1
+Tested up to: 4.2
 Stable tag: 1.2.5
 License: GPLv3
 
